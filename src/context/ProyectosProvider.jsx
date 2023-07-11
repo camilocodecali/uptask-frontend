@@ -11,6 +11,7 @@ const ProyectosProvider = ({children}) => {
     const [ proyecto, setProyecto ] = useState({});
     const [ cargando, setCargando ] = useState(false);
     const [ modalFormularioTarea, setModalFormularioTarea] = useState(false);
+    const [ tarea, setTarea ] = useState({})
 
     const navigate = useNavigate();
 
@@ -172,9 +173,25 @@ const ProyectosProvider = ({children}) => {
 
     const handleModalTarea = () => {
         setModalFormularioTarea(!modalFormularioTarea)
+        setTarea({})
     }
 
     const submitTarea = async tarea =>{
+        if(tarea?.id){
+            await editarTarea(tarea)
+        }else{
+            await crearTarea(tarea)
+        }
+
+        return
+
+    }
+    
+    const editarTarea = async tarea =>{
+        console.log("editando tarea", tarea);
+    }
+
+    const crearTarea = async tarea =>{
         try {
             const token = localStorage.getItem('token')
             if(!token) return
@@ -187,10 +204,23 @@ const ProyectosProvider = ({children}) => {
             }
 
             const { data } = await clienteAxios.post('/tareas', tarea, config)
-            console.log(data);
+
+            //Agregar la tarea al state
+            const proyectoActualizado = {...proyecto }
+            proyectoActualizado.tareas = [...proyecto.tareas, data]
+
+            setProyecto(proyectoActualizado)
+            setAlerta({})
+            setModalFormularioTarea(false)
+
         } catch (error) {
             console.log(error);
         }
+    }
+
+    const handleModalEditarTarea = (tarea) => {
+        setTarea(tarea)
+        setModalFormularioTarea(true)
     }
 
 
@@ -207,7 +237,9 @@ const ProyectosProvider = ({children}) => {
                 eliminarProyecto,
                 handleModalTarea,
                 modalFormularioTarea,
-                submitTarea
+                submitTarea,
+                handleModalEditarTarea,
+                tarea
             }}
         >
         {children}

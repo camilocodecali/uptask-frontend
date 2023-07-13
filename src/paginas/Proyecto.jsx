@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import useProyectos from "../hooks/useProyectos";
+import useAdmin from "../hooks/useAdmin";
 import ModalFormularioTarea from "../components/ModalFormularioTarea";
 import ModalEliminarTarea from "../components/ModalEliminarTarea";
 import ModalEliminarColaborador from "../components/ModalEliminarColaborador";
@@ -11,8 +12,9 @@ import Colaborador from "../components/Colaborador";
 const Proyecto = () => {
   const params = useParams();
 
-  const { obtenerProyecto, proyecto, cargando, handleModalTarea, alerta } =
-    useProyectos();
+  const { obtenerProyecto, proyecto, cargando, handleModalTarea, alerta } = useProyectos();
+  const  admin  = useAdmin()
+
 
   useEffect(() => {
     obtenerProyecto(params.id);
@@ -20,18 +22,18 @@ const Proyecto = () => {
 
   const { nombre } = proyecto;
 
+
   if (cargando) return "Cargando...";
 
   const { msg } = alerta;
 
-  return msg && alerta.error ? (
-    <Alerta alerta={alerta} />
-  ) : (
+  return  (
     <>
       <div className="flex justify-between">
         <h1 className="font-black text-4xl">{nombre}</h1>
 
-        <div className="flex items-center gap-2 text-gray-400 hover:text-black">
+        {admin && (
+          <div className="flex items-center gap-2 text-gray-400 hover:text-black">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -53,8 +55,12 @@ const Proyecto = () => {
             Editar
           </Link>
         </div>
+        )}
+
       </div>
-      <button
+
+      {admin && (
+        <button
         onClick={handleModalTarea}
         type="button"
         className="text-sm px-5 py-3 w-full md:w-auto rounded-lg uppercase font-bold
@@ -74,13 +80,11 @@ const Proyecto = () => {
         </svg>
         Nueva Tarea
       </button>
+      )}
+
 
       <p className="font-bold text-xl mt-10">Tareas del Proyecto</p>
-      <div className="flex justify-center">
-        <div className="w-full md:w-1/3 lg:w-1/4">
-          {msg && <Alerta alerta={alerta} />}
-        </div>
-      </div>
+
       <div className="bg-white shadow mt-10 rounded-lg">
         {proyecto.tareas?.length ? (
           proyecto.tareas?.map((tarea) => (
@@ -93,28 +97,31 @@ const Proyecto = () => {
         )}
       </div>
 
-      <div className="flex items-center justify-between mt-10">
-        <p className="font-bold text-xl mt-10">Colaboradores</p>
-        <Link
-          to={`/proyectos/nuevo-colaborador/${proyecto._id}`}
-          className="text-gray-400 hover:text-black uppercase font-bold"
-        >
-          Añadir
-        </Link>
-      </div>
+      {admin && (
+      <>
+        <div className="flex items-center justify-between mt-10">
+          <p className="font-bold text-xl mt-10">Colaboradores</p>
+          <Link
+            to={`/proyectos/nuevo-colaborador/${proyecto._id}`}
+            className="text-gray-400 hover:text-black uppercase font-bold"
+          >
+            Añadir
+          </Link>
+        </div>
 
-      <div className="bg-white shadow mt-10 rounded-lg">
-        {proyecto.colaboradores?.length ? (
-          proyecto.colaboradores?.map((colaborador) => (
-            <Colaborador key={colaborador._id} colaborador={colaborador} />
-          ))
-        ) : (
-          <p className="text-center my-5 p-10">
-            No hay Colaboradores en este proyecto
-          </p>
-        )}
-      </div>
-
+        <div className="bg-white shadow mt-10 rounded-lg">
+          {proyecto.colaboradores?.length ? (
+            proyecto.colaboradores?.map((colaborador) => (
+              <Colaborador key={colaborador._id} colaborador={colaborador} />
+            ))
+          ) : (
+            <p className="text-center my-5 p-10">
+              No hay Colaboradores en este proyecto
+            </p>
+          )}
+        </div>
+      </>
+      )}
       <ModalFormularioTarea />
       <ModalEliminarTarea />
       <ModalEliminarColaborador />
